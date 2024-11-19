@@ -41,7 +41,8 @@ model Transaction {
   receiverId Int
   amount    Float
   type      TransactionType
-  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   sender    User     @relation("Sender", fields: [senderId], references: [id])
   receiver  User     @relation("Receiver", fields: [receiverId], references: [id])
 }
