@@ -3,7 +3,11 @@ const { JWT_SECRET } = require("../secrets");
 const prisma = require("../prisma/prisma");
 
 const authMiddleware = async (req, res, next) => {
-  const token = req.header("Authorization").replace("Bearer ", "");
+  const authHeader = req.header("Authorization");
+  if (!authHeader) {
+    return res.status(401).send({ error: "No token provided" });
+  }
+  const token = authHeader.split(" ")[1];
 
   if (!token) {
     return res.status(401).send({ error: "No token provided" });
