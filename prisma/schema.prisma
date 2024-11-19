@@ -35,6 +35,7 @@ model User {
   email     String   @unique
   password  String
   role Role @default(USER)
+  balance   Float    @default(0.0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   transactionsSent    Transaction[] @relation("Sender")
