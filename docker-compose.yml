@@ -1,0 +1,32 @@
+services:
+  node-services:
+    build: . # ใช้ Image จาก Docker Hub
+    container_name: node-services
+    environment:
+      PORT: 8080
+      JWT_SECRET: your_token_key
+      DATABASE_URL: mysql://user:password@db:3306/mydb
+    ports:
+      - "8080:8080" # เปิดพอร์ตสำหรับ Local Development
+    depends_on:
+      - db
+    networks: 
+      - loan_network
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306" # เปิดพอร์ตเฉพาะ Development
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - loan_network
+volumes:
+  db_data:
+networks:
+  loan_network: 
+    external: true
