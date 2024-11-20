@@ -3,10 +3,15 @@ const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const { PORT } = require("./secrets");
 const rootRouter = require("./routes/index");
+const cors = require("cors")
 
 const app = express();
 app.use(bodyParser.json());
 app.use(morgan("dev"));
+app.use(cors({
+  origin: "*"
+}))
+
 
 app.use("/api", rootRouter);
 
