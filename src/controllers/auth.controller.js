@@ -27,7 +27,7 @@ const signup = async (req, res) => {
         password: hashSync(password, 10),
       },
     });
-    res.status(201).json(user);
+    res.status(201).json({ message: "SUCCESS", user });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
