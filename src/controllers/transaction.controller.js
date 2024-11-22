@@ -32,15 +32,21 @@ const getTransactionsByUserId = async (req, res) => {
       let counterparty;
 
       if (transaction.type === "BORROW") {
-        typeDescription = transaction.senderId === parseInt(userId) ? "ยืมเงิน" : "ให้ยืมเงิน";
-        counterparty = transaction.senderId === parseInt(userId)
-          ? transaction.receiver.username
-          : transaction.sender.username;
+        typeDescription =
+          transaction.senderId === parseInt(userId) ? "ยืมเงิน" : "ให้ยืมเงิน";
+        counterparty =
+          transaction.senderId === parseInt(userId)
+            ? transaction.receiver.username
+            : transaction.sender.username;
       } else if (transaction.type === "REPAY") {
-        typeDescription = transaction.senderId === parseInt(userId) ? "คืนเงิน" : "ได้รับคืนเงิน";
-        counterparty = transaction.senderId === parseInt(userId)
-          ? transaction.receiver.username
-          : transaction.sender.username;
+        typeDescription =
+          transaction.senderId === parseInt(userId)
+            ? "คืนเงิน"
+            : "ได้รับคืนเงิน";
+        counterparty =
+          transaction.senderId === parseInt(userId)
+            ? transaction.receiver.username
+            : transaction.sender.username;
       }
 
       return {
@@ -51,7 +57,10 @@ const getTransactionsByUserId = async (req, res) => {
       };
     });
 
-    res.status(200).json(formattedTransactions);
+    res.status(200).json({
+      message: "SUCCESS",
+      transactions: formattedTransactions,
+    });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
