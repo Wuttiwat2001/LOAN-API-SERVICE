@@ -14,6 +14,7 @@ const getTransactionsByUserId = async (req, res) => {
         amount: true,
         senderId: true,
         receiverId: true,
+        createdAt: true,
         sender: {
           select: {
             username: true,
@@ -27,9 +28,10 @@ const getTransactionsByUserId = async (req, res) => {
       },
     });
 
-    const formattedTransactions = transactions.map((transaction) => {
+    const formattedTransactions = transactions.map((transaction,index) => {
       let typeDescription;
       let counterparty;
+      let amount = transaction.amount;
 
       if (transaction.type === "BORROW") {
         typeDescription =
@@ -38,6 +40,9 @@ const getTransactionsByUserId = async (req, res) => {
           transaction.senderId === parseInt(userId)
             ? transaction.receiver.username
             : transaction.sender.username;
+        if (transaction.receiverId === parseInt(userId)) {
+          amount = -amount;
+        }
       } else if (transaction.type === "REPAY") {
         typeDescription =
           transaction.senderId === parseInt(userId)
@@ -47,13 +52,18 @@ const getTransactionsByUserId = async (req, res) => {
           transaction.senderId === parseInt(userId)
             ? transaction.receiver.username
             : transaction.sender.username;
+        if (transaction.senderId === parseInt(userId)) {
+          amount = -amount;
+        }
       }
 
       return {
+        index: index+1,
         id: transaction.id,
         type: typeDescription,
-        amount: transaction.amount,
+        amount: amount,
         counterparty: counterparty,
+        createdAt: transaction.createdAt,
       };
     });
 
