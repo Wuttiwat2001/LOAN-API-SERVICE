@@ -3,11 +3,14 @@ const prisma = require("../prisma/prisma");
 const getTransactionsByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
+    const { skip, take, page, pageSize } = req.pagination;
 
     const transactions = await prisma.transaction.findMany({
       where: {
         OR: [{ senderId: parseInt(userId) }, { receiverId: parseInt(userId) }],
       },
+      skip: skip,
+      take: take,
       select: {
         id: true,
         type: true,
@@ -28,7 +31,13 @@ const getTransactionsByUserId = async (req, res) => {
       },
     });
 
-    const formattedTransactions = transactions.map((transaction,index) => {
+    const totalTransactions = await prisma.transaction.count({
+      where: {
+        OR: [{ senderId: parseInt(userId) }, { receiverId: parseInt(userId) }],
+      },
+    });
+
+    const formattedTransactions = transactions.map((transaction, index) => {
       let typeDescription;
       let counterparty;
       let amount = transaction.amount;
@@ -58,7 +67,7 @@ const getTransactionsByUserId = async (req, res) => {
       }
 
       return {
-        index: index+1,
+        index: index + 1,
         id: transaction.id,
         type: typeDescription,
         amount: amount,
@@ -69,6 +78,10 @@ const getTransactionsByUserId = async (req, res) => {
 
     res.status(200).json({
       message: "SUCCESS",
+      total: totalTransactions,
+      page: page,
+      pageSize: pageSize,
+      total: totalTransactions,
       transactions: formattedTransactions,
     });
   } catch (error) {
