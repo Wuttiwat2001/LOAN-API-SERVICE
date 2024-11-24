@@ -8,6 +8,7 @@ RUN npm install
 
 COPY . .
 
+# Generate Prisma client
 RUN npx prisma generate
 
 EXPOSE 8080
