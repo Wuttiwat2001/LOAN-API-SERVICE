@@ -77,12 +77,13 @@ const getTransactionsByUserId = async (req, res) => {
     });
 
     res.status(200).json({
-      message: "SUCCESS",
-      total: totalTransactions,
-      page: page,
-      pageSize: pageSize,
-      total: totalTransactions,
-      transactions: formattedTransactions,
+      data: {
+        message: "SUCCESS",
+        page: page,
+        pageSize: pageSize,
+        total: totalTransactions,
+        transactions: formattedTransactions,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });

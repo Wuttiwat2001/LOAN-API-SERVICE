@@ -7,7 +7,6 @@ const { JWT_SECRET } = require("../secrets");
 const signup = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [{ username: username }, { email: email }],
@@ -27,7 +26,13 @@ const signup = async (req, res) => {
         password: hashSync(password, 10),
       },
     });
-    res.status(201).json({ message: "SUCCESS", user });
+
+    res.status(201).json({
+      data: {
+        message: "SUCCESS",
+        user,
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
@@ -35,16 +40,16 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
     const user = await prisma.user.findFirst({
       where: {
-        OR: [{ email: email }, { username: email }],
+        username: username,
       },
     });
 
     if (!user) {
-      return res.status(400).json({ error: "Invalid email or username" });
+      return res.status(400).json({ error: "Invalid username" });
     }
 
     const isPasswordValid = compareSync(password, user.password);
@@ -56,8 +61,15 @@ const login = async (req, res) => {
       expiresIn: "1d",
     });
 
-    res.status(200).json({ message: "SUCCESS", user, token });
+    res.status(200).json({
+      data: {
+        message: "SUCCESS",
+        user,
+        token,
+      },
+    });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ error: "Internal server error" });
   }
 };
