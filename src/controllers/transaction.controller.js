@@ -42,7 +42,7 @@ const getTransactionsByUserId = async (req, res) => {
       let counterparty;
       let amount = transaction.amount;
 
-      if (transaction.type === "BORROW") {
+      if (transaction.type === "ยืมเงิน") {
         typeDescription =
           transaction.senderId === parseInt(userId) ? "ยืมเงิน" : "ให้ยืมเงิน";
         counterparty =
@@ -52,7 +52,7 @@ const getTransactionsByUserId = async (req, res) => {
         if (transaction.receiverId === parseInt(userId)) {
           amount = -amount;
         }
-      } else if (transaction.type === "REPAY") {
+      } else if (transaction.type === "คืนเงิน") {
         typeDescription =
           transaction.senderId === parseInt(userId)
             ? "คืนเงิน"
@@ -93,7 +93,7 @@ const repay = async (req, res) => {
   try {
     const { senderId, receiverId, amount, type } = req.body;
 
-    if (type !== "REPAY") {
+    if (type !== "คืนเงิน") {
       return res.status(400).json({ error: "Invalid transaction type" });
     }
 
