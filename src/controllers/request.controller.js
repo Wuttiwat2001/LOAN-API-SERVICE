@@ -3,38 +3,64 @@ const prisma = require("../prisma/prisma");
 const getRequestSenderByUserId = async (req, res) => {
   try {
     const { skip, take, page, pageSize } = req.pagination;
-    const { userId, search } = req.body;
+    const { userId, search,searchDate } = req.body;
 
     const searchConditions = search
       ? {
-        OR: [
-        {
-          receiver: {
-          firstName: {
-            contains: search,
-          },
-          },
-        },
-        {
-          receiver: {
-          lastName: {
-            contains: search,
-          },
-          },
-        },
-        {
-          status: {
-          contains: search,
-          },
-        },
-        {
-          amount: !isNaN(parseFloat(search)) ? {
-          equals: parseFloat(search),
-          } : undefined,
-        },
-        ].filter(condition => condition.amount !== undefined || condition.receiver || condition.status),
-      }
+          OR: [
+            {
+              receiver: {
+                firstName: {
+                  contains: search,
+                },
+              },
+            },
+            {
+              receiver: {
+                lastName: {
+                  contains: search,
+                },
+              },
+            },
+            {
+              status: {
+                contains: search,
+              },
+            },
+            {
+              amount: !isNaN(parseFloat(search))
+                ? {
+                    equals: parseFloat(search),
+                  }
+                : undefined,
+            },
+          ].filter(
+            (condition) =>
+              condition.amount !== undefined ||
+              condition.receiver ||
+              condition.status
+          ),
+        }
       : {};
+
+      if (searchDate && searchDate.length === 2) {
+        if (searchDate[0] && searchDate[1]) {
+          const startDate = new Date(searchDate[0]);
+          startDate.setHours(0, 0, 0, 0); 
+      
+          const endDate = new Date(searchDate[1]);
+          endDate.setHours(23, 59, 59, 999); 
+      
+          searchConditions.AND = [
+            {
+              createdAt: {
+                gte: startDate,
+                lte: endDate,
+              },
+            },
+          ];
+        }
+      }
 
     const requests = await prisma.request.findMany({
       where: {
@@ -44,7 +70,7 @@ const getRequestSenderByUserId = async (req, res) => {
       skip: skip,
       take: take,
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc",
       },
       select: {
         id: true,
@@ -75,7 +101,7 @@ const getRequestSenderByUserId = async (req, res) => {
     const totalRequests = await prisma.request.count({
       where: {
         senderId: parseInt(userId),
-        ...searchConditions
+        ...searchConditions,
       },
     });
 
