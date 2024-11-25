@@ -37,7 +37,7 @@ const getTransactionsByUserId = async (req, res) => {
       },
     });
 
-    const formattedTransactions = transactions.map((transaction, index) => {
+    const formattedTransactions = transactions.map((transaction) => {
       let typeDescription;
       let counterparty;
       let amount = transaction.amount;
@@ -67,7 +67,6 @@ const getTransactionsByUserId = async (req, res) => {
       }
 
       return {
-        index: index + 1,
         id: transaction.id,
         type: typeDescription,
         amount: amount,
