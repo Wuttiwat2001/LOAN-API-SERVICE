@@ -18,10 +18,6 @@ enum Role {
   USER
 }
 
-enum TransactionType {
-  BORROW
-  REPAY
-}
 
 
 model User {
@@ -48,7 +44,7 @@ model Transaction {
   senderId  Int
   receiverId Int
   amount    Float
-  type      TransactionType
+  type      String    
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   sender    User     @relation("Sender", fields: [senderId], references: [id])
