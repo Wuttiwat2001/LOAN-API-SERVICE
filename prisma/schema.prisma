@@ -23,11 +23,6 @@ enum TransactionType {
   REPAY
 }
 
-enum RequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
 
 model User {
   id        Int      @id @default(autoincrement())
@@ -65,7 +60,8 @@ model Request {
   senderId    Int
   receiverId  Int
   amount      Float
-  status      RequestStatus @default(PENDING)
+  status      String   @default("รอดำเนินการ")
+  description String   @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   sender      User     @relation("RequestSender", fields: [senderId], references: [id])
