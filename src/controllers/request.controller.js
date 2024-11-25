@@ -43,6 +43,9 @@ const getRequestSenderByUserId = async (req, res) => {
       },
       skip: skip,
       take: take,
+      orderBy: {
+        createdAt: 'desc'
+      },
       select: {
         id: true,
         amount: true,
