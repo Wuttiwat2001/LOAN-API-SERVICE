@@ -37,6 +37,7 @@ model User {
   firstName String   @default("")
   lastName  String   @default("")
   fullName  String   @default("")
+  phone     String   @default("")
   role Role @default(USER)
   balance   Float    @default(0.0)
   createdAt DateTime @default(now())

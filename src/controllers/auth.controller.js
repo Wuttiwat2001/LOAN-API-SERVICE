@@ -6,7 +6,7 @@ const { JWT_SECRET } = require("../secrets");
 
 const signup = async (req, res) => {
   try {
-    const { username, email, password, firstName, lastName } = req.body;
+    const { username, email, password, firstName, lastName, phone } = req.body;
     const fullName = `${firstName} ${lastName}`;
     const existingUser = await prisma.user.findFirst({
       where: {
@@ -28,6 +28,7 @@ const signup = async (req, res) => {
         firstName,
         lastName,
         fullName,
+        phone,
       },
     });
 
