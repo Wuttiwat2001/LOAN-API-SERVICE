@@ -3,7 +3,7 @@ const prisma = require("../prisma/prisma");
 const getRequestSenderByUserId = async (req, res) => {
   try {
     const { skip, take, page, pageSize } = req.pagination;
-    const { userId, search,searchDate } = req.body;
+    const { userId, search, searchDate } = req.body;
 
     const searchConditions = search
       ? {
@@ -43,24 +43,24 @@ const getRequestSenderByUserId = async (req, res) => {
         }
       : {};
 
-      if (searchDate && searchDate.length === 2) {
-        if (searchDate[0] && searchDate[1]) {
-          const startDate = new Date(searchDate[0]);
-          startDate.setHours(0, 0, 0, 0); 
-      
-          const endDate = new Date(searchDate[1]);
-          endDate.setHours(23, 59, 59, 999); 
-      
-          searchConditions.AND = [
-            {
-              createdAt: {
-                gte: startDate,
-                lte: endDate,
-              },
+    if (searchDate && searchDate.length === 2) {
+      if (searchDate[0] && searchDate[1]) {
+        const startDate = new Date(searchDate[0]);
+        startDate.setHours(0, 0, 0, 0);
+
+        const endDate = new Date(searchDate[1]);
+        endDate.setHours(23, 59, 59, 999);
+
+        searchConditions.AND = [
+          {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
             },
-          ];
-        }
+          },
+        ];
       }
+    }
 
     const requests = await prisma.request.findMany({
       where: {
@@ -98,12 +98,21 @@ const getRequestSenderByUserId = async (req, res) => {
       },
     });
 
-    const totalRequests = await prisma.request.count({
+    const statusCounts = await prisma.request.groupBy({
+      by: ["status"],
       where: {
         senderId: parseInt(userId),
         ...searchConditions,
       },
+      _count: {
+        status: true,
+      },
     });
+
+    const totalRequests = statusCounts.reduce(
+      (acc, statusCount) => acc + statusCount._count.status,
+      0
+    );
 
     const formattedRequests = requests.map((request) => {
       let counterparty;
@@ -119,6 +128,17 @@ const getRequestSenderByUserId = async (req, res) => {
       };
     });
 
+    const allStatuses = ["รอดำเนินการ", "อนุมัติ", "ปฏิเสธ"];
+    const statusCountMap = statusCounts.reduce((acc, statusCount) => {
+      acc[statusCount.status] = statusCount._count.status;
+      return acc;
+    }, {});
+
+    const statusCountArray = allStatuses.map((status) => ({
+      status: status,
+      countStatus: statusCountMap[status] || 0,
+    }));
+
     res.status(200).json({
       data: {
         page: page,
@@ -126,6 +146,7 @@ const getRequestSenderByUserId = async (req, res) => {
         message: "SUCCESS",
         requests: formattedRequests,
         totalRequests,
+        statusCount: statusCountArray,
       },
     });
   } catch (error) {
