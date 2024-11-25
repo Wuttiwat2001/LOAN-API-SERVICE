@@ -29,6 +29,7 @@ const signup = async (req, res) => {
         lastName,
         fullName,
         phone,
+        balance: 1000,
       },
     });
 
