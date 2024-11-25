@@ -1,19 +1,130 @@
 const prisma = require("../prisma/prisma");
 
+const getRequestSenderByUserId = async (req, res) => {
+  try {
+    const { skip, take, page, pageSize } = req.pagination;
+    const { userId, search } = req.body;
+
+    const searchConditions = search
+      ? {
+        OR: [
+        {
+          receiver: {
+          firstName: {
+            contains: search,
+          },
+          },
+        },
+        {
+          receiver: {
+          lastName: {
+            contains: search,
+          },
+          },
+        },
+        {
+          status: {
+          contains: search,
+          },
+        },
+        {
+          amount: !isNaN(parseFloat(search)) ? {
+          equals: parseFloat(search),
+          } : undefined,
+        },
+        ].filter(condition => condition.amount !== undefined || condition.receiver || condition.status),
+      }
+      : {};
+
+    const requests = await prisma.request.findMany({
+      where: {
+        senderId: parseInt(userId),
+        ...searchConditions,
+      },
+      skip: skip,
+      take: take,
+      select: {
+        id: true,
+        amount: true,
+        status: true,
+        description: true,
+        senderId: true,
+        receiverId: true,
+        createdAt: true,
+        updatedAt: true,
+        sender: {
+          select: {
+            fullName: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        receiver: {
+          select: {
+            fullName: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    const totalRequests = await prisma.request.count({
+      where: {
+        senderId: parseInt(userId),
+        ...searchConditions
+      },
+    });
+
+    const formattedRequests = requests.map((request) => {
+      let counterparty;
+
+      if (request.receiverId) {
+        counterparty = request.receiver.fullName;
+      }
+
+      return {
+        ...request,
+        counterparty: counterparty,
+        status: request.status,
+      };
+    });
+
+    res.status(200).json({
+      data: {
+        page: page,
+        pageSize: pageSize,
+        message: "SUCCESS",
+        requests: formattedRequests,
+        totalRequests,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 const requestBorrow = async (req, res) => {
   try {
-    const { senderId, receiverId, amount } = req.body;
+    const { senderId, receiverId, amount, description } = req.body;
 
     const request = await prisma.request.create({
       data: {
         senderId,
         receiverId,
         amount,
-        status: "PENDING",
+        description,
+        status: "รอดำเนินการ",
       },
     });
 
-    res.status(201).json(request);
+    res.status(201).json({
+      data: {
+        message: "SUCCESS",
+        request,
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
@@ -24,7 +135,7 @@ const approveOrRejectRequest = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!["APPROVED", "REJECTED"].includes(status)) {
+    if (!["อนุมัติ", "ปฏิเสธ"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
 
@@ -33,7 +144,7 @@ const approveOrRejectRequest = async (req, res) => {
       data: { status },
     });
 
-    if (status === "APPROVED") {
+    if (status === "อนุมัติ") {
       await prisma.transaction.create({
         data: {
           senderId: request.senderId,
@@ -50,4 +161,8 @@ const approveOrRejectRequest = async (req, res) => {
   }
 };
 
-module.exports = { requestBorrow, approveOrRejectRequest };
+module.exports = {
+  requestBorrow,
+  approveOrRejectRequest,
+  getRequestSenderByUserId,
+};
