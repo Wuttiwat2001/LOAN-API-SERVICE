@@ -6,7 +6,8 @@ const { JWT_SECRET } = require("../secrets");
 
 const signup = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, firstName, lastName } = req.body;
+    const fullName = `${firstName} ${lastName}`;
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [{ username: username }, { email: email }],
@@ -24,6 +25,9 @@ const signup = async (req, res) => {
         username,
         email,
         password: hashSync(password, 10),
+        firstName,
+        lastName,
+        fullName,
       },
     });
 
@@ -69,7 +73,6 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error)
     res.status(500).json({ error: "Internal server error" });
   }
 };
