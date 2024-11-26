@@ -8,6 +8,7 @@ const {
   getTransactionSenderByUserId,
 } = require("../controllers/transaction.controller");
 const {
+  validateRepay,
   validateTransactions,
 } = require("../validators/transactionValidator");
 
@@ -29,7 +30,12 @@ transactionRoutes.post(
   getTransactionSenderByUserId
 );
 
-
-transactionRoutes.post("/repay", [authMiddleware], repay);
+transactionRoutes.post(
+  "/repay",
+  [authMiddleware],
+  validateRepay,
+  validationMiddleware,
+  repay
+);
 
 module.exports = transactionRoutes;

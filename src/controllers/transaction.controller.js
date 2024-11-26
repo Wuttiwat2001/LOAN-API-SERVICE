@@ -377,26 +377,65 @@ const getTransactionSenderByUserId = async (req, res, next) => {
   }
 };
 
-const repay = async (req, res) => {
+const repay = async (req, res, next) => {
   try {
-    const { senderId, receiverId, amount, type } = req.body;
+    const { transactionId } = req.body;
 
-    if (type !== "คืนเงิน") {
-      return res.status(400).json({ error: "Invalid transaction type" });
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ error: "ไม่เจอธุรกรรมที่ค้นหา" });
     }
 
-    const transaction = await prisma.transaction.create({
+    if (transaction.type !== "ยืมเงิน") {
+      return res.status(400).json({ error: "กรุณาระบุประเภทให้ถูกต้อง" });
+    }
+    const updatedTransaction = await prisma.transaction.update({
+      where: { id: transactionId },
       data: {
-        senderId,
-        receiverId,
-        amount,
-        type,
+        isBorrow: true,
+      },
+    });
+    const repaymentTransaction = await prisma.transaction.create({
+      data: {
+        senderId: transaction.senderId,
+        receiverId: transaction.receiverId,
+        amount: transaction.amount,
+        type: "คืนเงิน",
       },
     });
 
-    res.status(201).json(transaction);
+    const updatedSender = await prisma.user.update({
+      where: { id: transaction.senderId },
+      data: {
+        balance: {
+          decrement: transaction.amount,
+        },
+      },
+    });
+
+    const updatedReceiver = await prisma.user.update({
+      where: { id: transaction.receiverId },
+      data: {
+        balance: {
+          increment: transaction.amount,
+        },
+      },
+    });
+
+    res.status(201).json({
+      data: {
+        message: "SUCCESS",
+        updatedTransaction,
+        repaymentTransaction,
+        updatedSender,
+        updatedReceiver,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 };
 
