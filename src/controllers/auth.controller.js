@@ -6,7 +6,8 @@ const { JWT_SECRET } = require("../secrets");
 
 const signup = async (req, res, next) => {
   try {
-    const { username, email, password, firstName, lastName, phone } = req.body;
+    const { username, email, password, firstName, lastName, phone, prefix } =
+      req.body;
     const fullName = `${firstName} ${lastName}`;
 
     const existingUsername = await prisma.user.findFirst({
@@ -29,6 +30,9 @@ const signup = async (req, res, next) => {
     if (existingPhone) {
       return res.status(400).json({ error: "หมายเลขโทรศัพท์นี้ถูกใช้แล้ว" });
     }
+
+    const fullPhoneNumber = prefix + phone;
+
     const user = await prisma.user.create({
       data: {
         username,
@@ -37,7 +41,7 @@ const signup = async (req, res, next) => {
         firstName,
         lastName,
         fullName,
-        phone,
+        phone: fullPhoneNumber,
         balance: 1000,
       },
     });
