@@ -22,6 +22,7 @@ requestRoutes.post(
   validationMiddleware,
   getRequestSenderByUserId
 );
+
 requestRoutes.post(
   "/requestReceiver",
   [authMiddleware, paginationMiddleware],
@@ -29,6 +30,7 @@ requestRoutes.post(
   validationMiddleware,
   getRequestReceiverByUserId
 );
+
 requestRoutes.post(
   "/requestBorrow",
   [authMiddleware],

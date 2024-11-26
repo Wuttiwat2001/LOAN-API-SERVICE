@@ -599,4 +599,5 @@ module.exports = {
   repay,
   getTransactionsByUserId,
   getTransactionSenderByUserId,
+  getTransactionReceiverByUserId
 };
