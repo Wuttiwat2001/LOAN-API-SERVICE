@@ -54,13 +54,8 @@ const login = async (req, res) => {
       },
     });
 
-    if (!user) {
-      return res.status(400).json({ error: "Invalid username" });
-    }
-
-    const isPasswordValid = compareSync(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(400).json({ error: "Invalid password" });
+    if (!user || !compareSync(password, user.password)) {
+      return res.status(400).json({ error: "Invalid username or password" });
     }
 
     const token = jwt.sign({ id: user.id }, JWT_SECRET, {
