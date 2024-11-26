@@ -16,6 +16,16 @@ const validateTransactions = [
     .withMessage("Page Size ต้องเป็นตัวเลขที่มากกว่าหรือเท่ากับ 1"),
 ];
 
+const validateRepay = [
+  body("transactionId")
+    .isInt()
+    .withMessage("Transaction ID ต้องเป็นตัวเลข")
+    .notEmpty()
+    .withMessage("กรุณาระบุ Transaction ID"),
+];
+
+
 module.exports = {
   validateTransactions,
+  validateRepay
 };
