@@ -176,6 +176,29 @@ const getTransactionsByUserId = async (req, res) => {
       countType: typeCountMap[type] || 0,
     }));
 
+    const incomeTransactions = formattedTransactions.reduce(
+      (acc, transaction) => {
+        if (transaction.type === "ยืมเงิน" || transaction.type === "ได้รับคืนเงิน") {
+          acc.count += 1;
+          acc.amount += transaction.amount;
+        }
+        return acc;
+      },
+      { count: 0, amount: 0 }
+    );
+
+    const expenseTransactions = formattedTransactions.reduce(
+      (acc, transaction) => {
+        if (transaction.type === "ให้ยืมเงิน" || transaction.type === "คืนเงิน") {
+          acc.count += 1;
+          acc.amount += transaction.amount;
+        }
+        return acc;
+      },
+      { count: 0, amount: 0 }
+    );
+
+
     res.status(200).json({
       data: {
         message: "SUCCESS",
@@ -185,12 +208,20 @@ const getTransactionsByUserId = async (req, res) => {
         transactions: formattedTransactions,
         totalTransactions,
         typeCount: typeCountArray,
+        incomeTransactions,
+        expenseTransactions
       },
     });
   } catch (error) {
     next(error);
   }
 };
+
+
+
+
+
+
 
 const repay = async (req, res) => {
   try {
