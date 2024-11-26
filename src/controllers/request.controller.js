@@ -147,7 +147,6 @@ const getRequestSenderByUserId = async (req, res) => {
   }
 };
 
-
 const getRequestReceiverByUserId = async (req, res) => {
   try {
     const { skip, take, page, pageSize } = req.pagination;
@@ -295,7 +294,7 @@ const getRequestReceiverByUserId = async (req, res) => {
   }
 };
 
-const requestBorrow = async (req, res) => {
+const requestBorrow = async (req, res, next) => {
   try {
     const { senderId, receiverId, amount, description } = req.body;
 
@@ -316,17 +315,17 @@ const requestBorrow = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 };
 
-const approveOrRejectRequest = async (req, res) => {
+const approveOrRejectRequest = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
     if (!["อนุมัติ", "ปฏิเสธ"].includes(status)) {
-      return res.status(400).json({ error: "Invalid status" });
+      return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
     }
 
     const request = await prisma.request.update({
@@ -345,9 +344,14 @@ const approveOrRejectRequest = async (req, res) => {
       });
     }
 
-    res.status(200).json(request);
-  } catch {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(200).json({
+      data: {
+        message: "SUCCESS",
+        request,
+      },
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -355,5 +359,5 @@ module.exports = {
   requestBorrow,
   approveOrRejectRequest,
   getRequestSenderByUserId,
-  getRequestReceiverByUserId
+  getRequestReceiverByUserId,
 };
