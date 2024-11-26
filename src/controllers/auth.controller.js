@@ -44,7 +44,7 @@ const signup = async (req, res) => {
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
@@ -55,7 +55,7 @@ const login = async (req, res) => {
     });
 
     if (!user || !compareSync(password, user.password)) {
-      return res.status(400).json({ error: "Invalid username or password" });
+      return res.status(400).json({ error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
     }
 
     const token = jwt.sign({ id: user.id }, JWT_SECRET, {
@@ -70,7 +70,7 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 };
 
