@@ -11,17 +11,22 @@ const {
 const {
   validateRequestBorrow,
   validateApproveOrRejectRequest,
+  validateGetRequestSenderAndReceiverById,
 } = require("../validators/requestValidator");
 const validationMiddleware = require("../middlewares/validation");
 
 requestRoutes.post(
   "/requestSender",
   [authMiddleware, paginationMiddleware],
+  validateGetRequestSenderAndReceiverById,
+  validationMiddleware,
   getRequestSenderByUserId
 );
 requestRoutes.post(
   "/requestReceiver",
   [authMiddleware, paginationMiddleware],
+  validateGetRequestSenderAndReceiverById,
+  validationMiddleware,
   getRequestReceiverByUserId
 );
 requestRoutes.post(
