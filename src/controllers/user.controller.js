@@ -1,6 +1,6 @@
 const prisma = require("../prisma/prisma");
 
-const allUsers = async (req, res) => {
+const allUsers = async (req, res, next) => {
   try {
     const users = await prisma.user.findMany();
 
@@ -11,16 +11,21 @@ const allUsers = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 };
 
-const findUserById = async (req, res) => {
+const balanceById = async (req, res, next) => {
   try {
     const { id } = req.params;
+
     const user = await prisma.user.findUnique({
       where: {
         id: parseInt(id),
+      },
+      select: {
+        id: true,
+        balance: true,
       },
     });
 
@@ -35,11 +40,11 @@ const findUserById = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 };
 
 module.exports = {
   allUsers,
-  findUserById,
+  balanceById,
 };
