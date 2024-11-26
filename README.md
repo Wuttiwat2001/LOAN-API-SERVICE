@@ -2,7 +2,7 @@
 
 This project is a backend service for managing loan transactions. It is built using Node.js, Express, and Prisma ORM.
 
-1.Clone the repository: https://github.com/Wuttiwat2001/loan-api-backend.git
+1.Clone the repository: https://github.com/Wuttiwat2001/LOAN-API-SERVICE
 
 2.Install dependencies: npm install
 
