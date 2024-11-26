@@ -334,6 +334,23 @@ const approveOrRejectRequest = async (req, res, next) => {
     });
 
     if (status === "อนุมัติ") {
+      const receiver = await prisma.user.findUnique({
+        where: { id: request.receiverId },
+      });
+
+      if (!receiver) {
+        return res.status(404).json({ error: "ไม่พบผู้ใช้" });
+      }
+
+      if (receiver.balance < request.amount) {
+        return res.status(400).json({ error: "ยอดเงินไม่เพียงพอ" });
+      }
+
+      await prisma.user.update({
+        where: { id: request.receiverId },
+        data: { balance: { decrement: request.amount } },
+      });
+
       await prisma.transaction.create({
         data: {
           senderId: request.senderId,
