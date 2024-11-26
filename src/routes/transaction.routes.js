@@ -1,10 +1,24 @@
 const express = require("express");
-const authRoutes = express.Router();
+const transactionRoutes = express.Router();
 const authMiddleware = require("../middlewares/auth");
 const paginationMiddleware = require("../middlewares/pagination");
-const { repay,getTransactionsByUserId } = require("../controllers/transaction.controller");
+const {
+  repay,
+  getTransactionsByUserId,
+} = require("../controllers/transaction.controller");
+const {
+  validateGetTransactionsByUserId,
+} = require("../validators/transactionValidator");
 
-authRoutes.get("/:userId", [authMiddleware,paginationMiddleware], getTransactionsByUserId);
-authRoutes.post("/repay", [authMiddleware], repay);
+const validationMiddleware = require("../middlewares/validation");
 
-module.exports = authRoutes;
+transactionRoutes.post(
+  "/",
+  [authMiddleware, paginationMiddleware],
+  validateGetTransactionsByUserId,
+  validationMiddleware,
+  getTransactionsByUserId
+);
+transactionRoutes.post("/repay", [authMiddleware], repay);
+
+module.exports = transactionRoutes;
