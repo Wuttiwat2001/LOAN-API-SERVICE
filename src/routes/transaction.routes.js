@@ -6,6 +6,7 @@ const {
   repay,
   getTransactionsByUserId,
   getTransactionSenderByUserId,
+  getTransactionReceiverByUserId,
 } = require("../controllers/transaction.controller");
 const {
   validateRepay,
@@ -28,6 +29,14 @@ transactionRoutes.post(
   validateTransactions,
   validationMiddleware,
   getTransactionSenderByUserId
+);
+
+transactionRoutes.post(
+  "/receiver",
+  [authMiddleware, paginationMiddleware],
+  validateTransactions,
+  validationMiddleware,
+  getTransactionReceiverByUserId
 );
 
 transactionRoutes.post(
