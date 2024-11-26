@@ -1,6 +1,6 @@
 const prisma = require("../prisma/prisma");
 
-const getTransactionsByUserId = async (req, res) => {
+const getTransactionsByUserId = async (req, res,next) => {
   try {
     const { skip, take, page, pageSize } = req.pagination;
     const { userId, search, searchDate } = req.body;
@@ -178,7 +178,10 @@ const getTransactionsByUserId = async (req, res) => {
 
     const incomeTransactions = formattedTransactions.reduce(
       (acc, transaction) => {
-        if (transaction.type === "ยืมเงิน" || transaction.type === "ได้รับคืนเงิน") {
+        if (
+          transaction.type === "ยืมเงิน" ||
+          transaction.type === "ได้รับคืนเงิน"
+        ) {
           acc.count += 1;
           acc.amount += transaction.amount;
         }
@@ -189,7 +192,10 @@ const getTransactionsByUserId = async (req, res) => {
 
     const expenseTransactions = formattedTransactions.reduce(
       (acc, transaction) => {
-        if (transaction.type === "ให้ยืมเงิน" || transaction.type === "คืนเงิน") {
+        if (
+          transaction.type === "ให้ยืมเงิน" ||
+          transaction.type === "คืนเงิน"
+        ) {
           acc.count += 1;
           acc.amount += transaction.amount;
         }
@@ -197,7 +203,6 @@ const getTransactionsByUserId = async (req, res) => {
       },
       { count: 0, amount: 0 }
     );
-
 
     res.status(200).json({
       data: {
@@ -209,19 +214,13 @@ const getTransactionsByUserId = async (req, res) => {
         totalTransactions,
         typeCount: typeCountArray,
         incomeTransactions,
-        expenseTransactions
+        expenseTransactions,
       },
     });
   } catch (error) {
     next(error);
   }
 };
-
-
-
-
-
-
 
 const repay = async (req, res) => {
   try {
