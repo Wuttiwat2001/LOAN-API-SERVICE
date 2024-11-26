@@ -5,9 +5,10 @@ const paginationMiddleware = require("../middlewares/pagination");
 const {
   repay,
   getTransactionsByUserId,
+  getTransactionSenderByUserId,
 } = require("../controllers/transaction.controller");
 const {
-  validateGetTransactionsByUserId,
+  validateTransactions,
 } = require("../validators/transactionValidator");
 
 const validationMiddleware = require("../middlewares/validation");
@@ -15,10 +16,20 @@ const validationMiddleware = require("../middlewares/validation");
 transactionRoutes.post(
   "/",
   [authMiddleware, paginationMiddleware],
-  validateGetTransactionsByUserId,
+  validateTransactions,
   validationMiddleware,
   getTransactionsByUserId
 );
+
+transactionRoutes.post(
+  "/sender",
+  [authMiddleware, paginationMiddleware],
+  validateTransactions,
+  validationMiddleware,
+  getTransactionSenderByUserId
+);
+
+
 transactionRoutes.post("/repay", [authMiddleware], repay);
 
 module.exports = transactionRoutes;

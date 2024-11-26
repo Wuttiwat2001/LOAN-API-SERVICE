@@ -1,6 +1,6 @@
 const prisma = require("../prisma/prisma");
 
-const getTransactionsByUserId = async (req, res,next) => {
+const getTransactionsByUserId = async (req, res, next) => {
   try {
     const { skip, take, page, pageSize } = req.pagination;
     const { userId, search, searchDate } = req.body;
@@ -209,12 +209,167 @@ const getTransactionsByUserId = async (req, res,next) => {
         message: "SUCCESS",
         page: page,
         pageSize: pageSize,
-        total: totalTransactions,
         transactions: formattedTransactions,
         totalTransactions,
         typeCount: typeCountArray,
         incomeTransactions,
         expenseTransactions,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getTransactionSenderByUserId = async (req, res, next) => {
+  try {
+    const { skip, take, page, pageSize } = req.pagination;
+    const { userId, search, searchDate } = req.body;
+
+    const searchConditions = search
+      ? {
+          OR: [
+            {
+              receiver: {
+                firstName: {
+                  contains: search,
+                },
+              },
+            },
+            {
+              receiver: {
+                lastName: {
+                  contains: search,
+                },
+              },
+            },
+            {
+              status: {
+                contains: search,
+              },
+            },
+            {
+              amount: !isNaN(parseFloat(search))
+                ? {
+                    equals: parseFloat(search),
+                  }
+                : undefined,
+            },
+          ].filter(
+            (condition) =>
+              condition.amount !== undefined ||
+              condition.receiver ||
+              condition.status
+          ),
+        }
+      : {};
+
+    if (searchDate && searchDate.length === 2) {
+      if (searchDate[0] && searchDate[1]) {
+        const startDate = new Date(searchDate[0]);
+        startDate.setHours(0, 0, 0, 0);
+
+        const endDate = new Date(searchDate[1]);
+        endDate.setHours(23, 59, 59, 999);
+
+        searchConditions.AND = [
+          {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+        ];
+      }
+    }
+
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        type: "ยืมเงิน",
+        senderId: parseInt(userId),
+        ...searchConditions,
+      },
+      skip: skip,
+      take: take,
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        type: true,
+        amount: true,
+        senderId: true,
+        receiverId: true,
+        isBorrow: true,
+        createdAt: true,
+        updatedAt: true,
+        receiver: {
+          select: {
+            fullName: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    const formattedRequests = transactions.map((transaction) => {
+      let counterparty;
+
+      if (transaction.receiver) {
+        counterparty = transaction.receiver.fullName;
+      }
+
+      return {
+        id: transaction.id,
+        type: transaction.type,
+        amount: transaction.amount,
+        counterparty: counterparty,
+        isBorrow: transaction.isBorrow,
+        createdAt: transaction.createdAt,
+        updatedAt: transaction.updatedAt,
+      };
+    });
+
+    const paidTransactions = formattedRequests.reduce(
+      (acc, transaction) => {
+        if (transaction.isBorrow) {
+          acc.count += 1;
+          acc.amount += transaction.amount;
+        }
+        return acc;
+      },
+      { count: 0, amount: 0 }
+    );
+
+    const outstandingTransactions = formattedRequests.reduce(
+      (acc, transaction) => {
+        if (!transaction.isBorrow) {
+          acc.count += 1;
+          acc.amount += transaction.amount;
+        }
+        return acc;
+      },
+      { count: 0, amount: 0 }
+    );
+
+    const totalTransactions = await prisma.transaction.count({
+      where: {
+        type: "ยืมเงิน",
+        senderId: parseInt(userId),
+        ...searchConditions,
+      },
+    });
+
+    res.status(200).json({
+      data: {
+        message: "SUCCESS",
+        page: page,
+        pageSize: pageSize,
+        transactions: formattedRequests,
+        paidTransactions,
+        outstandingTransactions,
+        totalTransactions,
       },
     });
   } catch (error) {
@@ -245,4 +400,8 @@ const repay = async (req, res) => {
   }
 };
 
-module.exports = { repay, getTransactionsByUserId };
+module.exports = {
+  repay,
+  getTransactionsByUserId,
+  getTransactionSenderByUserId,
+};
