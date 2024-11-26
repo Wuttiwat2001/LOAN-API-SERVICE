@@ -4,22 +4,31 @@ const compareSync = require("bcrypt").compareSync;
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../secrets");
 
-const signup = async (req, res) => {
+const signup = async (req, res, next) => {
   try {
     const { username, email, password, firstName, lastName, phone } = req.body;
     const fullName = `${firstName} ${lastName}`;
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ username: username }, { email: email }],
-      },
-    });
 
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ error: "Username or email already exists" });
+    const existingUsername = await prisma.user.findFirst({
+      where: { username: username },
+    });
+    if (existingUsername) {
+      return res.status(400).json({ error: "รหัสผู้ใช้งานนี้ถูกใช้แล้ว" });
     }
 
+    const existingEmail = await prisma.user.findFirst({
+      where: { email: email },
+    });
+    if (existingEmail) {
+      return res.status(400).json({ error: "อีเมลนี้ถูกใช้แล้ว" });
+    }
+
+    const existingPhone = await prisma.user.findFirst({
+      where: { phone: phone },
+    });
+    if (existingPhone) {
+      return res.status(400).json({ error: "หมายเลขโทรศัพท์นี้ถูกใช้แล้ว" });
+    }
     const user = await prisma.user.create({
       data: {
         username,
@@ -40,7 +49,7 @@ const signup = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 };
 
@@ -55,7 +64,9 @@ const login = async (req, res, next) => {
     });
 
     if (!user || !compareSync(password, user.password)) {
-      return res.status(400).json({ error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
+      return res
+        .status(400)
+        .json({ error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
     }
 
     const token = jwt.sign({ id: user.id }, JWT_SECRET, {
