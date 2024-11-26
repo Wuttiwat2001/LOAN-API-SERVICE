@@ -3,11 +3,11 @@ const authRoutes = express.Router();
 const { signup, login } = require("../controllers/auth.controller");
 const {
   validateLogin,
-  signupValidationRules,
+  validationSignup,
 } = require("../validators/authValidator");
 const validationMiddleware = require("../middlewares/validation");
 
-authRoutes.post("/signup", validateLogin, signupValidationRules, signup);
+authRoutes.post("/signup", validationSignup, validationMiddleware, signup);
 authRoutes.post("/login", validateLogin, validationMiddleware, login);
 
 module.exports = authRoutes;
