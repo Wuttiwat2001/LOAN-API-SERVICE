@@ -1,6 +1,6 @@
 const { body, query } = require("express-validator");
 
-const validateGetTransactionsByUserId = [
+const validateTransactions = [
   body("userId")
     .isInt()
     .withMessage("User ID ต้องเป็นตัวเลข")
@@ -17,5 +17,5 @@ const validateGetTransactionsByUserId = [
 ];
 
 module.exports = {
-  validateGetTransactionsByUserId,
+  validateTransactions,
 };
