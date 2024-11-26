@@ -17,11 +17,11 @@ const allUsers = async (req, res, next) => {
 
 const balanceById = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { userId } = req.params;
 
     const user = await prisma.user.findUnique({
       where: {
-        id: parseInt(id),
+        id: parseInt(userId),
       },
       select: {
         id: true,
@@ -36,7 +36,7 @@ const balanceById = async (req, res, next) => {
     res.status(200).json({
       data: {
         message: "SUCCESS",
-        user: user,
+        user
       },
     });
   } catch (error) {

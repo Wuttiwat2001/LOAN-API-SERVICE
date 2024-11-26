@@ -1,4 +1,4 @@
-const {  param } = require("express-validator");
+const { param } = require("express-validator");
 const validateUserId = [
   param("userId")
     .isInt()
@@ -8,5 +8,5 @@ const validateUserId = [
 ];
 
 module.exports = {
-  validateUserId
+  validateUserId,
 };
