@@ -47,6 +47,7 @@ model Transaction {
   type      String    
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  isBorrow  Boolean @default(false)
   sender    User     @relation("Sender", fields: [senderId], references: [id])
   receiver  User     @relation("Receiver", fields: [receiverId], references: [id])
 }
