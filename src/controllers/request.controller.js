@@ -1,6 +1,6 @@
 const prisma = require("../prisma/prisma");
 
-const getRequestSenderByUserId = async (req, res) => {
+const getRequestSenderByUserId = async (req, res, next) => {
   try {
     const { skip, take, page, pageSize } = req.pagination;
     const { userId, search, searchDate } = req.body;
@@ -143,11 +143,11 @@ const getRequestSenderByUserId = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 };
 
-const getRequestReceiverByUserId = async (req, res) => {
+const getRequestReceiverByUserId = async (req, res, next) => {
   try {
     const { skip, take, page, pageSize } = req.pagination;
     const { userId, search, searchDate } = req.body;
@@ -290,7 +290,7 @@ const getRequestReceiverByUserId = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 };
 
