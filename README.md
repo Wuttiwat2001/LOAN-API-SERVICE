@@ -73,3 +73,7 @@ DATABASE_URL="mysql://root:root@localhost:3306/loan_db"
 
 npx prisma migrate dev
 
+6.Change the DATABASE_URL in the .env file to use db:
+
+DATABASE_URL="mysql://username:password@db:3306/loan_db"
+
