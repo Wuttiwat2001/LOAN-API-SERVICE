@@ -351,6 +351,11 @@ const approveOrRejectRequest = async (req, res, next) => {
         data: { balance: { decrement: request.amount } },
       });
 
+      await prisma.user.update({
+        where: { id: request.receiverId },
+        data: { balance: { decrement: request.amount } },
+      });
+
       await prisma.transaction.create({
         data: {
           senderId: request.senderId,
